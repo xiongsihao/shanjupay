@@ -27,7 +27,7 @@ spring:
         max-active: 8
         max-wait: 10000
     timeout: 10000
-    password: 123456
+    #password: 123456
 
 sms:
   qcloud:

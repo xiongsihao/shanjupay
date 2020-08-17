@@ -84,7 +84,7 @@ https://cloud.tencent.com/product/isms/getting-started
 
 如果暂时没有申请到腾讯云短信服务，可以临时将验证码输出到控制台。
 
-修改sailing/src/main/java/cn/itcast/sailing/handler/SmsNumberVerificationHandler.java
+修改sailing/src/main/java/cn/xsh/sailing/handler/SmsNumberVerificationHandler.java
 
 ```java
 	@Override

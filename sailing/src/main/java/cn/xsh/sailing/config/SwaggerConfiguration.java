@@ -23,7 +23,7 @@ public class SwaggerConfiguration {
 				.apiInfo(buildApiInfo())
 				.select()
 				// 要扫描的API(Controller)基础包
-				.apis(RequestHandlerSelectors.basePackage("cn.itcast.sailing.controller"))
+				.apis(RequestHandlerSelectors.basePackage("cn.xsh.sailing.controller"))
 				.paths(PathSelectors.any())
 				.build();
 	}
