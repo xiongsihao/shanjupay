@@ -70,4 +70,25 @@ public class SmsServiceImpl implements SmsService {
             throw new RuntimeException("发送验证码出错");
         }
     }
+
+    @Override
+    public void checkVerifiyCode(String verifiyKey, String verifiyCode) {
+        //实现校验验证码的逻辑
+        String check_url = url + "/verify?name=sms&verificationCode=" + verifiyCode + "&verificationKey=" + verifiyKey;
+        Map responseMap = null;
+        try {
+            //请求校验验证码
+            ResponseEntity<Map> exchange = restTemplate.exchange(check_url, HttpMethod.POST, HttpEntity.EMPTY, Map.class);
+            responseMap = exchange.getBody();
+            log.info("校验验证码，响应内容：{}", JSON.toJSONString(responseMap));
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.info(e.getMessage(), e);
+            throw new RuntimeException("验证码错误");
+        }
+        if (responseMap == null || responseMap.get("result") == null || !(Boolean) responseMap.get("result")) {
+            throw new RuntimeException("验证码错误");
+        }
+    }
+
 }

@@ -3,6 +3,7 @@ package com.shanjupay.merchant.controller;
 import com.shanjupay.merchant.api.MerchantService;
 import com.shanjupay.merchant.api.dto.MerchantDTO;
 import com.shanjupay.merchant.service.SmsService;
+import com.shanjupay.merchant.vo.MerchantRegisterVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -53,5 +54,23 @@ public class MerchantController {
         log.info("向手机号:{}发送验证码", phone);
 
         return smsService.sendMsg(phone);
+    }
+
+
+    @ApiOperation("注册商户")
+    @ApiImplicitParam(name = "merchantRegister", value = "注册信息", required = true, dataType = "MerchantRegisterVO", paramType = "body")
+    @PostMapping("/merchants/register")
+    public MerchantRegisterVO registerMerchant(@RequestBody MerchantRegisterVO merchantRegister) {
+
+        //校验验证码
+        smsService.checkVerifiyCode(merchantRegister.getVerifiykey(), merchantRegister.getVerifiyCode());
+
+        //注册商户
+        MerchantDTO merchantDTO = new MerchantDTO();
+        merchantDTO.setUsername(merchantRegister.getUsername());
+        merchantDTO.setMobile(merchantRegister.getMobile());
+        //merchantDTO.setPassword(merchantRegister.getPassword());
+        merchantService.createMerchant(merchantDTO);
+        return merchantRegister;
     }
 }
