@@ -1,5 +1,8 @@
 package com.shanjupay.merchant.controller;
 
+import com.shanjupay.common.domain.BusinessException;
+import com.shanjupay.common.domain.CommonErrorCode;
+import com.shanjupay.common.util.PhoneUtil;
 import com.shanjupay.merchant.api.MerchantService;
 import com.shanjupay.merchant.api.dto.MerchantDTO;
 import com.shanjupay.merchant.convert.MerchantRegisterConvert;
@@ -9,6 +12,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -62,6 +66,20 @@ public class MerchantController {
     @ApiImplicitParam(name = "merchantRegister", value = "注册信息", required = true, dataType = "MerchantRegisterVO", paramType = "body")
     @PostMapping("/merchants/register")
     public MerchantRegisterVO registerMerchant(@RequestBody MerchantRegisterVO merchantRegister) {
+
+        //校验参数的合法性
+        if (merchantRegister == null) {
+            throw new BusinessException(CommonErrorCode.E_100108);
+        }
+        if (StringUtils.isBlank(merchantRegister.getMobile())) {
+            throw new BusinessException(CommonErrorCode.E_100112);
+        }
+
+        //手机号格式校验
+        if (!PhoneUtil.isMatches(merchantRegister.getMobile())) {
+            throw new BusinessException(CommonErrorCode.E_100109);
+        }
+
 
         //校验验证码
         smsService.checkVerifiyCode(merchantRegister.getVerifiykey(), merchantRegister.getVerifiyCode());

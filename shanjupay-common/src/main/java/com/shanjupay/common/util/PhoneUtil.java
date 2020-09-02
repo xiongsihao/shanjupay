@@ -16,7 +16,7 @@ public class PhoneUtil {
         return m.matches();
     }
 
-    //public static void main(String[] args) {
-    //    System.out.println(isMatches("13512341233"));
-    //}
+    public static void main(String[] args) {
+        System.out.println(isMatches("13512341233"));
+    }
 }

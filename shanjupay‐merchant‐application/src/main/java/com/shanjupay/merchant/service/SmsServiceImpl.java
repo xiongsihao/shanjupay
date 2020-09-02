@@ -1,6 +1,8 @@
 package com.shanjupay.merchant.service;
 
 import com.alibaba.fastjson.JSON;
+import com.shanjupay.common.domain.BusinessException;
+import com.shanjupay.common.domain.CommonErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,7 +74,7 @@ public class SmsServiceImpl implements SmsService {
     }
 
     @Override
-    public void checkVerifiyCode(String verifiyKey, String verifiyCode) {
+    public void checkVerifiyCode(String verifiyKey, String verifiyCode) throws BusinessException {
         //实现校验验证码的逻辑
         String check_url = url + "/verify?name=sms&verificationCode=" + verifiyCode + "&verificationKey=" + verifiyKey;
         Map responseMap = null;
@@ -84,7 +86,10 @@ public class SmsServiceImpl implements SmsService {
         } catch (Exception e) {
             e.printStackTrace();
             log.info(e.getMessage(), e);
-            throw new RuntimeException("验证码错误");
+            //throw new RuntimeException("验证码错误");
+
+            //抛出自定义异常
+            throw new BusinessException(CommonErrorCode.E_100102);
         }
         if (responseMap == null || responseMap.get("result") == null || !(Boolean) responseMap.get("result")) {
             throw new RuntimeException("验证码错误");
