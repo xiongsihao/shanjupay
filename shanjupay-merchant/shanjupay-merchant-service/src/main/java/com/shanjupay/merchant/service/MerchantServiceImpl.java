@@ -68,4 +68,27 @@ public class MerchantServiceImpl implements MerchantService {
 
         return MerchantConvert.INSTANCE.entity2dto(merchant);
     }
+
+    @Override
+    public void applyMerchant(Long merchantId, MerchantDTO merchantDTO) throws BusinessException {
+        if(merchantId == null || merchantDTO == null){
+            throw new BusinessException(CommonErrorCode.E_300009);
+        }
+
+        //校验商户id merchantId是否在商户表存在，如果不存在则认为非法
+        Merchant merchant = merchantMapper.selectById(merchantId);
+        if(merchant == null){
+            throw new BusinessException((CommonErrorCode.E_200002));
+        }
+
+        //将dto转成entity
+        Merchant entity = MerchantConvert.INSTANCE.dto2entity(merchantDTO);
+        //更新之前，要将必要的参数设置到entity
+        entity.setId(merchant.getId());
+        entity.setMobile(merchant.getMobile());//因为资质申请的时候手机号比较重要，不让修改，所以取出数据库原有的手机号再更新
+        entity.setAuditStatus("1");//审核状态为1-已申请待审核
+        entity.setTenantId(merchant.getTenantId());
+        //调用mapper更新商户表
+        merchantMapper.updateById(entity);
+    }
 }

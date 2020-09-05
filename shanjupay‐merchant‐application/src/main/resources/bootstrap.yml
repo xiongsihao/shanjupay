@@ -36,7 +36,7 @@ spring:
       # 上传文件的临时目录
       location:
       # 最大支持文件大小
-      max-file-size: 1MB
+      max-file-size: 10MB
       # 最大支持请求大小
       max-request-size: 30MB
 
