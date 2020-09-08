@@ -13,6 +13,7 @@ import com.shanjupay.merchant.mapper.MerchantMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -32,8 +33,9 @@ public class AppServiceImpl implements AppService {
      * 1）校验商户是否通过资质审核 如果商户资质审核没有通过不允许创建应用。
      * 2）生成应用ID 应用Id使用UUID方式生成。
      * 3）保存商户应用信息 应用名称需要校验唯一性。
+     *
      * @param merchantId 商户id
-     * @param appDTO 应用信息
+     * @param appDTO     应用信息
      * @return 创建成功返回的应用信息
      * @throws BusinessException
      */
@@ -41,7 +43,7 @@ public class AppServiceImpl implements AppService {
     public AppDTO createApp(Long merchantId, AppDTO appDTO) throws BusinessException {
 
 
-        if(merchantId == null || appDTO ==null || StringUtils.isBlank(appDTO.getAppName())){
+        if (merchantId == null || appDTO == null || StringUtils.isBlank(appDTO.getAppName())) {
             throw new BusinessException(CommonErrorCode.E_300009);
         }
 
@@ -69,8 +71,22 @@ public class AppServiceImpl implements AppService {
         return AppCovert.INSTANCE.entity2dto(entity);
     }
 
+
     public Boolean isExistAppName(String appName) {
         Integer count = appMapper.selectCount(new QueryWrapper<App>().lambda().eq(App::getAppName, appName));
         return count.intValue() > 0;
+    }
+
+    @Override
+    public List<AppDTO> queryAppByMerchant(Long merchantId) {
+        List<App> apps = appMapper.selectList(new QueryWrapper<App>().lambda().eq(App::getMerchantId, merchantId));
+        List<AppDTO> appDTOS = AppCovert.INSTANCE.listentity2dto(apps);
+        return appDTOS;
+    }
+
+    @Override
+    public AppDTO getAppById(String id) {
+        App app = appMapper.selectOne(new QueryWrapper<App>().lambda().eq(App::getAppId, id));
+        return AppCovert.INSTANCE.entity2dto(app);
     }
 }

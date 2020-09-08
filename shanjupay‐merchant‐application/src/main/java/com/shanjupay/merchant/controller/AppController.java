@@ -8,9 +8,9 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.dubbo.config.annotation.Reference;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author : xsh
@@ -29,5 +29,19 @@ public class AppController {
     public AppDTO createApp(@RequestBody AppDTO app) {
         Long merchantId = SecurityUtil.getMerchantId();
         return appService.createApp(merchantId, app);
+    }
+
+    @ApiOperation("查询商户下的应用列表")
+    @GetMapping(value = "/my/apps")
+    public List<AppDTO> queryMyApps() {
+        Long merchantId = SecurityUtil.getMerchantId();
+        return appService.queryAppByMerchant(merchantId);
+    }
+
+    @ApiOperation("根据appid获取应用的详细信息")
+    @ApiImplicitParams({@ApiImplicitParam(name = "appId", value = "商户应用id", required = true, dataType = "String", paramType = "path")})
+    @GetMapping(value = "/my/apps/{appId}")
+    public AppDTO getApp(@PathVariable String appId) {
+        return appService.getAppById(appId);
     }
 }
