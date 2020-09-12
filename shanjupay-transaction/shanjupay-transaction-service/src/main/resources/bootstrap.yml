@@ -14,12 +14,12 @@ spring:
     nacos:
       discovery:
         server-addr: ${nacos.server.addr}
-        namespace: a1f8e863-3117-48c4-9dd3-e9ddc2af90a8
+        namespace: 9a8ac67e-0f2c-4410-96f6-a0f2e539fde5
         cluster-name: DEFAULT
       config:
         server-addr: ${nacos.server.addr} # 配置中心地址
         file-extension: yaml
-        namespace: a1f8e863-3117-48c4-9dd3-e9ddc2af90a8 #2ed00aaa-b760-4171-baa9-83d92e509a41 # 默认开发环境郑州区 命令行注入
+        namespace: 9a8ac67e-0f2c-4410-96f6-a0f2e539fde5 #2ed00aaa-b760-4171-baa9-83d92e509a41 # 默认开发环境郑州区 命令行注入
         group: SHANJUPAY_GROUP # 聚合支付业务组
         ext-config:
           -
@@ -55,5 +55,6 @@ dubbo:
 
 logging:
   config: classpath:log4j2.xml
+
 
 
