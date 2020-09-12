@@ -1,6 +1,7 @@
 package com.shanjupay.merchant.controller;
 
 import com.shanjupay.transaction.api.PayChannelService;
+import com.shanjupay.transaction.api.dto.PayChannelDTO;
 import com.shanjupay.transaction.api.dto.PlatformChannelDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -50,4 +51,12 @@ public class PlatformParamController {
     public int queryAppBindPlatformChannel(@RequestParam String appId, @RequestParam String platformChannel) {
         return payChannelService.queryAppBindPlatformChannel(appId, platformChannel);
     }
+
+    @ApiOperation("根据平台服务类型获取支付渠道列表")
+    @ApiImplicitParams({@ApiImplicitParam(name = "platformChannelCode", value = "服务类型编码", required = true, dataType = "String", paramType = "path")})
+    @GetMapping(value = "/my/payChannels/platformChannel/{platformChannelCode}")
+    public List<PayChannelDTO> queryPayChannelByPlatformChannel(@PathVariable String platformChannelCode) {
+        return payChannelService.queryPayChannelByPlatformChannel(platformChannelCode);
+    }
+
 }
