@@ -1,7 +1,11 @@
 package com.shanjupay.merchant.controller;
 
+import com.shanjupay.common.domain.BusinessException;
+import com.shanjupay.common.domain.CommonErrorCode;
+import com.shanjupay.merchant.common.util.SecurityUtil;
 import com.shanjupay.transaction.api.PayChannelService;
 import com.shanjupay.transaction.api.dto.PayChannelDTO;
+import com.shanjupay.transaction.api.dto.PayChannelParamDTO;
 import com.shanjupay.transaction.api.dto.PlatformChannelDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -59,4 +63,16 @@ public class PlatformParamController {
         return payChannelService.queryPayChannelByPlatformChannel(platformChannelCode);
     }
 
+    @ApiOperation("商户配置支付渠道参数")
+    @ApiImplicitParams({@ApiImplicitParam(name = "payChannelParam", value = "商户配置支付渠道参数", required = true, dataType = "PayChannelParamDTO", paramType = "body")})
+    @RequestMapping(value = "/my/pay‐channel‐params", method = {RequestMethod.POST, RequestMethod.PUT})
+    public void createPayChannelParam(@RequestBody PayChannelParamDTO payChannelParam) {
+        if(payChannelParam == null||payChannelParam.getChannelName()==null){
+            throw new BusinessException(CommonErrorCode.E_300009);
+        }
+
+        Long merchantId = SecurityUtil.getMerchantId();
+        payChannelParam.setMerchantId(merchantId);
+        payChannelService.savePayChannelParam(payChannelParam);
+    }
 }
