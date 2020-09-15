@@ -65,9 +65,9 @@ public class PlatformParamController {
 
     @ApiOperation("商户配置支付渠道参数")
     @ApiImplicitParams({@ApiImplicitParam(name = "payChannelParam", value = "商户配置支付渠道参数", required = true, dataType = "PayChannelParamDTO", paramType = "body")})
-    @RequestMapping(value = "/my/pay‐channel‐params", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(value = "/my/payChannelParams", method = {RequestMethod.POST, RequestMethod.PUT})
     public void createPayChannelParam(@RequestBody PayChannelParamDTO payChannelParam) {
-        if(payChannelParam == null||payChannelParam.getChannelName()==null){
+        if (payChannelParam == null || payChannelParam.getChannelName() == null) {
             throw new BusinessException(CommonErrorCode.E_300009);
         }
 
@@ -75,4 +75,27 @@ public class PlatformParamController {
         payChannelParam.setMerchantId(merchantId);
         payChannelService.savePayChannelParam(payChannelParam);
     }
+
+    @ApiOperation("获取指定应用指定服务类型下所包含的原始支付渠道参数列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "appId", value = "应用id", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "platformChannel", value = "服务类型", required = true, dataType = "String", paramType = "path")
+    })
+    @GetMapping(value = "/my/payChannelParams/apps/{appId}/platformChannels/{platformChannel}")
+    public List<PayChannelParamDTO> queryPayChannelParam(@PathVariable String appId, @PathVariable String platformChannel) {
+        return payChannelService.queryPayChannelParamByAppAndPlatform(appId, platformChannel);
+    }
+
+    @ApiOperation("根据应用，服务类型和支付渠道的代码查询该支付渠道的参数配置信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "appId", value = "应用id", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "platformChannel", value = "平台支付渠道编码", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "payChannel", value = "实际支付渠道编码", required = true, dataType = "String", paramType = "path")
+    })
+    @GetMapping(value = "/my/payChannelParams/apps/{appId}/platformChannels/{platformChannel}/payChannels/{payChannel}")
+    public PayChannelParamDTO queryPayChannelParam(@PathVariable String appId, @PathVariable String platformChannel, @PathVariable String payChannel) {
+        return payChannelService.queryParamByAppPlatformAndPayChannel(appId, platformChannel, payChannel);
+    }
+
+
 }
