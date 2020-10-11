@@ -60,6 +60,14 @@ public class MerchantController {
         return "hi," + name;
     }
 
+    @ApiOperation("获取登录用户的商户信息")
+    @GetMapping(value = "/my/merchants")
+    public MerchantDTO getMyMerchantInfo() {
+        Long merchantId = SecurityUtil.getMerchantId();
+        MerchantDTO merchant = merchantService.queryMerchantById(merchantId);
+        return merchant;
+    }
+
     @ApiOperation("获取手机验证码")
     @ApiImplicitParam(name = "phone", value = "手机号", required = true, dataType = "String", paramType = "query")
     @GetMapping("/sms")
@@ -131,7 +139,7 @@ public class MerchantController {
 
         //将MerchantDetailVO转为merchantDTO
         MerchantDTO merchantDTO = MerchantDetailConvert.INSTANCE.vo2dto(merchantInfo);
-        merchantService.applyMerchant(merchantId,merchantDTO);
+        merchantService.applyMerchant(merchantId, merchantDTO);
     }
 
 }

@@ -15,12 +15,12 @@ spring:
     nacos:
       discovery:
         server-addr: ${nacos.server.addr}
-        namespace: f5eec3c1-4f05-40cd-964a-c8d44f342ab4
+        namespace: 9a8ac67e-0f2c-4410-96f6-a0f2e539fde5
         cluster-name: DEFAULT
       config:
         server-addr: ${nacos.server.addr} # 配置中心地址
         file-extension: yaml
-        namespace: f5eec3c1-4f05-40cd-964a-c8d44f342ab4
+        namespace: 9a8ac67e-0f2c-4410-96f6-a0f2e539fde5
         group: SHANJUPAY_GROUP # 聚合支付业务组
         ext-config:
           -

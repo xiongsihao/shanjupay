@@ -11,5 +11,6 @@ public class LoginUser {
 	private Map<String, Object> payload = new HashMap<>();
 	private String clientId;
 	private String username;
+	private Long tenantId;
 
 }
