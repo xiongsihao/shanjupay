@@ -47,7 +47,6 @@ public class SecurityUtil {
 		return new LoginUser();
 	}
 
-	//todo https://www.bilibili.com/video/BV1oT4y1E7LY?p=132
 	public static Long getMerchantId(){
 		MerchantService merchantService = ApplicationContextHelper.getBean(MerchantService.class);
 		MerchantDTO merchant = merchantService.queryMerchantByTenantId(getUser().getTenantId());
