@@ -1,152 +1,101 @@
 package com.shanjupay.transaction.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.github.wxpay.sdk.*;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.shanjupay.transaction.sdk.MyWXPayConfig;
+import com.shanjupay.transaction.sdk.WXPay;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-/**
- * @author Administrator
- * @version 1.0
- **/
-@Slf4j
 @Controller
+@RequestMapping("wxpay")
 public class WxPayController {
 
-    String appID = "wxd2bf2dba2e86a8c7";
-    String mchID = "1502570431";
-    String appSecret = "cec1a9185ad435abe1bced4b93f7ef2e";
-    String key = "95fe355daca50f1ae82f0865c2ce87c8";
-    //申请授权码地址
-    String wxOAuth2RequestUrl = "https://open.weixin.qq.com/connect/oauth2/authorize";
-    //授权回调地址
-    String wxOAuth2CodeReturnUrl = "http://xiongsihao.free.idcfengye.com/transaction/wx-oauth-code-return";
-    String state = "";
+    @RequestMapping("dopay")
+    public void dopay(HttpServletResponse response){
 
-    //获取授权码
-    @GetMapping("/getWXOAuth2Code")
-    public String getWXOAuth2Code(HttpServletRequest request, HttpServletResponse response) {
+        //用于生成订单编号的随机数
+        Date date=new Date();
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHssmm");
+        String orderIdPrefix = sdf.format(date);//创建订单编号的前缀
+        String pid="HP";//商品id,目前固定一个
+        String orderId=orderIdPrefix+pid;//最终订单id
+        MyWXPayConfig config = new MyWXPayConfig();
+        WXPay wxpay = null;
+        try {
+            wxpay = new WXPay(config);
 
-        //https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&state=STATE#wechat_redirect
-        String url = String.format("https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect",
-                appID, wxOAuth2CodeReturnUrl
-        );
+            Map<String, String> data = new HashMap<String, String>();
+            /*支付显示title*/
+            data.put("body", "qwer");
+            /*订单标号，唯一*/
+            data.put("out_trade_no", orderId);
+            /*设备信息*/
+            data.put("device_info", "");
+            /*货币单位，分*/
+            data.put("fee_type", "CNY");
+            /*总付费 单位分*/
+            data.put("total_fee", "1");
+            data.put("spbill_create_ip", "123.12.12.123");//ip
+            /*自定义回调地址,获取此次微信支付信息*/
+            data.put("notify_url", "http://xiongsihao.free.idcfengye.com/transaction/wxpay/notify_url");
+            data.put("trade_type", "NATIVE");  // 此处指定为扫码支付
+            /*商品id*/
+            data.put("product_id", "001");
 
-        return "redirect:" + url;
+            Map<String, String> resp = wxpay.unifiedOrder(data);
+            System.out.println(resp);
+
+            //将支付链接转换成二维码
+            String code_url = resp.get("code_url");//二维码需要包含的文本内容
+            HashMap<EncodeHintType, Object> hints = new HashMap<>();
+            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+            hints.put(EncodeHintType.MARGIN, 2);
+            try {
+                BitMatrix bitMatrix = new MultiFormatWriter().encode(code_url, BarcodeFormat.QR_CODE, 200, 200, hints);
+                MatrixToImageWriter.writeToStream(bitMatrix, "PNG", response.getOutputStream());
+                System.out.println("创建二维码完成");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
     /**
-     * //授权码回调，传入授权码和state，/wx-oauth-code-return?code=授权码&state=
-     *
-     * @param code  授权码
-     * @param state 申请授权码传入微信的值，被原样返回
+     * 微信回调地址
      * @return
      */
-    @GetMapping("/wx-oauth-code-return")
-    public String wxOAuth2CodeReturn(@RequestParam String code, @RequestParam String state) {
+    @RequestMapping("notify_url")
+    public void getNotifyURL(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        //获取微信发送来的请求，从请求消息中获得数据
+        ServletInputStream is = request.getInputStream();
+        byte[] b=new byte[1024];
+        int len=0;
+        String str=null;
+        while((len=is.read(b))!=-1){
+            str=new String(b,0,len);
+            System.out.println(str);
+        }
 
-        //https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code
-        String url = String.format("https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code",
-                appID, appSecret, code
-        );
+        //返回一个标准格式的回信，告诉微信请求成功,付款成功
+        response.getWriter().write("<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>");
 
-        //申请openid，请求url
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> exchange = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
-        //申请openid接口响应的内容，其中包括了openid
-        String body = exchange.getBody();
-        log.info("申请openid响应的内容:{}", body);
-        //获取openid
-        String openid = JSON.parseObject(body).getString("openid");
-        //重定向到统一下单接口
-        return "redirect:http://xiongsihao.free.idcfengye.com/transaction/wxjspay?openid=" + openid;
     }
-
-
-    //统一下单，接收openid
-    @GetMapping("/wxjspay")
-    public ModelAndView wxjspay(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        //创建sdk客户端
-        WXPay wxPay = new WXPay(new WXPayConfigCustom());
-        //构造请求的参数
-        Map<String, String> requestParam = new HashMap<>();
-        requestParam.put("out_trade_no", "10029293889");//订单号
-        requestParam.put("body", "iphone8");//订单描述
-        requestParam.put("fee_type", "CNY");//人民币
-        requestParam.put("total_fee", String.valueOf(1)); //金额
-        requestParam.put("spbill_create_ip", "127.0.0.1");//客户端ip
-        requestParam.put("notify_url", "none");//微信异步通知支付结果接口，暂时不用
-        requestParam.put("trade_type", "JSAPI");
-        //从请求中获取openid
-        String openid = request.getParameter("openid");
-        requestParam.put("openid", openid);
-        //调用统一下单接口
-        Map<String, String> resp = wxPay.unifiedOrder(requestParam);
-
-        //准备h5网页需要的数据
-        Map<String, String> jsapiPayParam = new HashMap<>();
-        jsapiPayParam.put("appId", appID);
-        jsapiPayParam.put("timeStamp", System.currentTimeMillis() / 1000 + "");
-        jsapiPayParam.put("nonceStr", UUID.randomUUID().toString());//随机字符串
-        jsapiPayParam.put("package", "prepay_id=" + resp.get("prepay_id"));
-        jsapiPayParam.put("signType", "HMAC-SHA256");
-        //将h5网页响应给前端
-        jsapiPayParam.put("paySign", WXPayUtil.generateSignature(jsapiPayParam, key, WXPayConstants.SignType.HMACSHA256));
-
-        return new ModelAndView("wxpay", jsapiPayParam);
-    }
-
-    class WXPayConfigCustom extends WXPayConfig {
-
-        @Override
-        protected String getAppID() {
-            return appID;
-        }
-
-        @Override
-        protected String getMchID() {
-            return mchID;
-        }
-
-        @Override
-        protected String getKey() {
-            return key;
-        }
-
-        @Override
-        protected InputStream getCertStream() {
-            return null;
-        }
-
-        @Override
-        protected IWXPayDomain getWXPayDomain() {
-            return new IWXPayDomain() {
-                @Override
-                public void report(String s, long l, Exception e) {
-
-                }
-
-                @Override
-                public DomainInfo getDomain(WXPayConfig wxPayConfig) {
-                    return new DomainInfo(WXPayConstants.DOMAIN_API, true);
-                }
-            };
-        }
-    }
-
-
 }
