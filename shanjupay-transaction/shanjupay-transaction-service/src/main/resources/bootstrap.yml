@@ -1,5 +1,6 @@
 server:
-  port: 56050 #启动端口 命令行注入
+  #port: 56050 #启动端口 命令行注入
+  port: 12000
 
 nacos:
   server:
