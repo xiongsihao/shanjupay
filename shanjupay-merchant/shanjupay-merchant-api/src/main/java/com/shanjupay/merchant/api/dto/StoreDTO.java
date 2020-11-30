@@ -1,5 +1,7 @@
 package com.shanjupay.merchant.api.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -12,6 +14,10 @@ public class StoreDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    //todo https://www.bilibili.com/video/BV1oT4y1E7LY?p=159
+    //ToStringSerializer表示进行json转换时，转成string
+    @ApiModelProperty("门店Id")
+    @JsonSerialize(using= ToStringSerializer.class)
     private Long id;
 
     @ApiModelProperty(value = "门店名称")

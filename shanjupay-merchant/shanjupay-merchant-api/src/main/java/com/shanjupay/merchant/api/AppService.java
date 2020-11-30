@@ -15,7 +15,7 @@ public interface AppService {
     /**
      * 创建应用
      * @param merchantId 商户id
-     * @param app 应用的信息
+     * @param app        应用的信息
      * @return 创建成功的应用信息
      * @throws BusinessException
      */
@@ -23,6 +23,7 @@ public interface AppService {
 
     /**
      * 查询商户下的应用列表
+     *
      * @param merchantId
      * @return
      * @throws BusinessException
@@ -31,9 +32,11 @@ public interface AppService {
 
     /**
      * 根据业务id查询应用
+     *
      * @param id
      * @return
      * @throws BusinessException
      */
     AppDTO getAppById(String id) throws BusinessException;
+
 }
